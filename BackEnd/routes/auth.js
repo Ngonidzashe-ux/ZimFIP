@@ -1,19 +1,17 @@
-const express = require("express"); // We need the express so we can use things like the Router.
-const bcrypt = require("bcryptjs"); //We need the  bcrypt to hash the passwords
-const User = require("../models/User"); //Importing the User JS Class or Model so we can interact with the Users collection
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const verifyToken = require("../middleware/auth");
+dotenv.config();
 
-const router = express.Router(); //creates a router for all the endpoints in the auth.js file
-//Signining up is an async operation becuase it happens independent to the running of the program
-//You put async just before the callback function to indicate asnyc operation
+const router = express.Router();
+
 router.post("/signup", async (req, res) => {
   try {
-    const { email, password, role, name, location, buyerType } = req.body; //Destructures JSON data into variables.
-    /*post: Handles POST requests to /api/auth/signup.
-    async: Allows await for async operations (e.g., database queries).
-    req.body: JSON data (e.g., { email: "user@example.com" }).
-    res: Sends response (e.g., res.json({ ... })). */
+    const { email, password, role, name, location, buyerType } = req.body;
 
-    //400 means server cannot and will not process the client request because of client error.
     if (
       !email ||
       !password ||
@@ -22,22 +20,22 @@ router.post("/signup", async (req, res) => {
       !location?.province ||
       !location?.city
     ) {
-      return res.status(400).json({ message: "Missing required fields" }); //If the required fields have not been filled
+      return res.status(400).json({ message: "Missing required fields" });
     }
     if (!["farmer", "buyer", "admin"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role" }); //Validates role is valid.
+      return res.status(400).json({ message: "Invalid role" });
     }
     if (buyerType && !["individual", "business"].includes(buyerType)) {
       return res.status(400).json({ message: "Invalid buyerType" });
     }
 
-    const existingUser = await User.findOne({ email }); //Checks if email exists in users collection.
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10); //Hashes password (10 is salt rounds for security).
-    //Creates a user object matching the schema.
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = new User({
       email,
       password: hashedPassword,
@@ -48,34 +46,97 @@ router.post("/signup", async (req, res) => {
       createdAt: new Date(),
     });
 
-    await user.save(); //Saves user to MongoDB.
-    //HTTP code for “created”.
+    await user.save();
+
     res.status(201).json({ userId: user._id, message: "User created" });
   } catch (error) {
-    //try/catch: Handles errors (e.g., database failure).
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+});
 
-    /*res:
-What: The response object in Express, used to send data back to the client (e.g., browser, Postman).
-Role: Represents the HTTP response for the request (e.g., signup attempt).
-.status(500):
-What: Sets the HTTP status code to 500 (Internal Server Error).
-Why: Indicates a server-side error (e.g., database failure, code crash).
-Syntax: res.status(code) sets the status; 500 is a standard error code (FinTech: clear error signaling).
-.json({ message: "Server error" }):
-What: Sends a JSON response { message: "Server error" } to the client.
-Details:
-{ message: "Server error" }: A JavaScript object with a message property.
-.json(): Converts the object to JSON and sets the Content-Type header to application/json.
-Why: Informs the client what went wrong (FinTech: user-friendly error messages).
-Overall Purpose:
-Handles errors in the route (e.g., database connection failure during signup).
-Returns a 500 status with a JSON error message, ending the request. */
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+    //I should query a query object and not a string. {email} is a query object while "email" is a string
+    //Its better to retrive the whole document and the access the properties
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      res.status(400).json({ message: "User does not exist" });
+      return;
+    }
+
+    if (await bcrypt.compare(password, user.password)) {
+      const payload = {
+        userId: user._id,
+        name: user.name,
+      };
+      const options = {
+        expiresIn: "1h",
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET, options);
+      res.status(200).json({ message: "Authentication Successful", token });
+    } else {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/users/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      res.status(400).json({ message: "The user does not exist" });
+      return;
+    }
+
+    const { name, location, role, buyerType } = user;
+    res
+      .status(200)
+      .json({ message: "User found", name, role, location, buyerType });
+  } catch (error) {
+    console.error("Server Error", error);
+    res.status(500).json({ message: "There is an internal server error" });
+  }
+});
+
+router.post("/login/google", async (req, res) => {
+  try {
+    const { googleId } = req.body;
+    if (!googleId) {
+      res.status(400).json({ message: "No google Id provided" });
+      return;
+    }
+
+    const user = await User.findOne({ googleId: googleId });
+    if (user) {
+      const payload = {
+        userId: user._id,
+        name: user.name,
+      };
+      const options = {
+        expiresIn: "1h",
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET, options);
+      res.status(200).json({ message: "Authentication Successful", token });
+    } else {
+      res.status(400).json({ message: "User does not exist" });
+      return;
+    }
+  } catch (error) {
+    console.error("Server Error", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 module.exports = router;
-//module.exports: Shares code from a file.
-// router: Contains Express routes (e.g., signup).
-// module.exports = router;: Makes routes available to server.js.
