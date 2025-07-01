@@ -256,12 +256,10 @@ router.put("/:id", verifyToken, async (req, res) => {
       paymentOptions.includes("ecocash") &&
       (!phoneNumber || !/^\+263[0-9]{9}$/.test(phoneNumber))
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Invalid or missing EcoCash phone number (e.g., +26377XXXXXXX)",
-        });
+      return res.status(400).json({
+        message:
+          "Invalid or missing EcoCash phone number (e.g., +26377XXXXXXX)",
+      });
     }
     if (
       farmerGrade &&
@@ -303,6 +301,80 @@ router.put("/:id", verifyToken, async (req, res) => {
       .json({ message: "Listing updated", listingId: updatedListing._id });
   } catch (error) {
     console.error("Listing update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/listings
+router.get("/", async (req, res) => {
+  try {
+    const {
+      produceRef,
+      province,
+      city,
+      town,
+      neighborhood,
+      radius = 10,
+      sort = "recent",
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    if (produceRef) {
+      query.produceRef = produceRef;
+    }
+    if (province) {
+      query["location.province"] = province;
+    }
+    if (city) {
+      query["location.city"] = city;
+    }
+    if (town) {
+      query["location.town"] = town;
+    }
+    if (neighborhood) {
+      query["location.neighborhood"] = neighborhood;
+    }
+
+    // Geo-spatial query for radius (requires coordinates)
+    if (neighborhood && req.query.longitude && req.query.latitude) {
+      const longitude = parseFloat(req.query.longitude);
+      const latitude = parseFloat(req.query.latitude);
+      if (isNaN(longitude) || isNaN(latitude)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid longitude or latitude" });
+      }
+      query["location.coordinates"] = {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+          $maxDistance: parseFloat(radius) * 1000, // Convert km to meters
+        },
+      };
+    }
+
+    // Sorting
+    let sortOption = {};
+    if (sort === "price") {
+      sortOption = { price: 1 }; // Low to high
+    } else if (sort === "recent") {
+      sortOption = { createdAt: -1 }; // Newest first
+    } else if (sort === "proximity" && query["location.coordinates"]) {
+      // Proximity handled by $near
+    } else {
+      return res.status(400).json({ message: "Invalid sort option" });
+    }
+
+    // Fetch listings
+    const listings = await Listing.find(query).sort(sortOption);
+
+    res.status(200).json(listings);
+  } catch (error) {
+    console.error("Listing fetch error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
