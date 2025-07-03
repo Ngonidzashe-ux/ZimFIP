@@ -76,7 +76,7 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    // Validate farmerGrade (optional)
+    // Validate farmerGrade
     if (
       farmerGrade &&
       !["Grade A", "Grade B", "Grade C"].includes(farmerGrade)
@@ -98,7 +98,6 @@ router.post("/", verifyToken, async (req, res) => {
     // Placeholder for computer vision (aiGrade)
     let aiGrade = null;
     if (photos && photos.length > 0) {
-      // TODO: Call computer vision API to set aiGrade
       aiGrade = "Grade B"; // Mock value
     }
 
@@ -124,65 +123,6 @@ router.post("/", verifyToken, async (req, res) => {
       .json({ message: "Listing created", listingId: listing._id });
   } catch (error) {
     console.error("Listing creation error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.delete("/:id", verifytoken, async (req, res) => {
-  try {
-    const listingId = req.body;
-    const listing = Listing.findByIdAndDelete(listingId);
-    if (!listing) {
-      return res.status(400).json({ message: "Listing not found" });
-    }
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-    if (user.role !== "farmer") {
-      return res
-        .status(403)
-        .json({ message: "No permission to make a listing" });
-    }
-  } catch (error) {
-    console.error("Listing creation error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// DELETE /api/listings/:id
-router.delete("/:id", verifyToken, async (req, res) => {
-  try {
-    const listingId = req.params.id;
-
-    // Check if listing exists and belongs to user
-    const listing = await Listing.findById(listingId);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-    if (listing.userId.toString() !== req.userId) {
-      return res
-        .status(403)
-        .json({ message: "No permission to delete this listing" });
-    }
-
-    // Check if user exists and is farmer
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-    if (user.role !== "farmer") {
-      return res
-        .status(403)
-        .json({ message: "No permission to delete this listing" });
-    }
-
-    // Delete listing
-    await Listing.deleteOne({ _id: listingId });
-
-    res.status(200).json({ message: "Listing deleted" });
-  } catch (error) {
-    console.error("Listing deletion error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -271,7 +211,6 @@ router.put("/:id", verifyToken, async (req, res) => {
     // Placeholder for computer vision (aiGrade)
     let aiGrade = listing.aiGrade;
     if (photos && photos.length > 0) {
-      // TODO: Call computer vision API to set aiGrade
       aiGrade = "Grade B"; // Mock value
     }
 
@@ -375,6 +314,43 @@ router.get("/", async (req, res) => {
     res.status(200).json(listings);
   } catch (error) {
     console.error("Listing fetch error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE /api/listings/:id
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const listingId = req.params.id;
+
+    // Check if listing exists and belongs to user
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
+    }
+    if (listing.userId.toString() !== req.userId) {
+      return res
+        .status(403)
+        .json({ message: "No permission to delete this listing" });
+    }
+
+    // Check if user exists and is farmer
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    if (user.role !== "farmer") {
+      return res
+        .status(403)
+        .json({ message: "No permission to delete this listing" });
+    }
+
+    // Delete listing
+    await Listing.deleteOne({ _id: listingId });
+
+    res.status(200).json({ message: "Listing deleted" });
+  } catch (error) {
+    console.error("Listing deletion error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
