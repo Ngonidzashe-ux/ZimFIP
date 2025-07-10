@@ -6,6 +6,7 @@ module.exports = {
         "zimfip-green": "#15803d", // Primary green
         "zimfip-teal": "#2dd4bf", // Secondary teal
         "zimfip-gray": "#1f2937", // Dark gray
+        "zimfip-light": "#f3f4f6", // Light gray cards
       },
     },
   },

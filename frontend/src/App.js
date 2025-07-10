@@ -1,21 +1,89 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "../src/pages/Home";
-import Login from "../src/pages/Login";
-import Signup from "../src/pages/Signup";
-import Navbar from "../src/components/Navbar";
+import { UserProvider } from "./context/UserContext";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Marketplace from "./pages/Marketplace";
+import Chat from "./pages/Chat";
+import CreateListing from "./pages/CreateListing";
+import Footer from "./components/Footer";
+import PrivateRoute from "./components/PrivateRoute";
+import Navbar from "./components/Navbar";
+import Admin from "./pages/Admin";
+import Purchase from "./pages/Purchase";
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Routes>
-      </div>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Navbar />
+        <div className="bg-white min-h-screen flex flex-col">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/marketplace"
+              element={
+                <PrivateRoute>
+                  <Marketplace />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <PrivateRoute>
+                  <Chat />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-listing"
+              element={
+                <PrivateRoute>
+                  <CreateListing />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/edit-listing/:id"
+              element={
+                <PrivateRoute>
+                  <CreateListing />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/purchase"
+              element={
+                <PrivateRoute>
+                  <Purchase />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+          <Footer />
+        </div>
+      </Router>
+    </UserProvider>
   );
 }
 
