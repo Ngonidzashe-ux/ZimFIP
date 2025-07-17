@@ -25,7 +25,7 @@ function Navbar() {
         <div className="flex space-x-6">
           <Link
             to="/"
-            className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+            className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
           >
             Home
           </Link>
@@ -33,19 +33,37 @@ function Navbar() {
             <>
               <Link
                 to="/marketplace"
-                className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
               >
                 Marketplace
               </Link>
               <Link
                 to="/dashboard"
-                className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
               >
-                Dashboard
+                Farmer Dashboard
+              </Link>
+              <Link
+                to="/buyerdashboard"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
+              >
+                Buyer Dashboard
+              </Link>
+              <Link
+                to="/admindashboard"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
+              >
+                Admin Dashboard
+              </Link>
+              <Link
+                to="/upgrade"
+                className="text-lg  font-bold hover:text-zimfip-teal transition-colors duration-200"
+              >
+                Upgrade
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
               >
                 Logout
               </button>
@@ -54,13 +72,13 @@ function Navbar() {
             <>
               <Link
                 to="/login"
-                className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="text-lg hover:text-zimfip-teal transition-colors duration-200"
+                className="text-lg font-bold hover:text-zimfip-teal transition-colors duration-200"
               >
                 Signup
               </Link>

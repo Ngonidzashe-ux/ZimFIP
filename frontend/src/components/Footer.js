@@ -2,16 +2,14 @@ import { Link } from "react-router-dom";
 
 function Footer() {
   return (
-    <footer className="bg-zimfip-light text-zimfip-gray p-4 mt-8">
+    <footer className="text-white p-4" style={{ backgroundColor: "#0A3A21" }}>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <h3 className="text-xl font-bold text-zimfip-green mb-2">ZimFIP</h3>
+          <h3 className="text-xl font-bold text-white mb-2">ZimFIP</h3>
           <p>Empowering farmers, connecting markets.</p>
         </div>
         <div>
-          <h3 className="text-xl font-bold text-zimfip-green mb-2">
-            Quick Links
-          </h3>
+          <h3 className="text-xl font-bold text-white mb-2">Quick Links</h3>
           <ul>
             <li>
               <Link to="/marketplace" className="hover:text-zimfip-teal">
@@ -31,7 +29,7 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <h3 className="text-xl font-bold text-zimfip-green mb-2">Contact</h3>
+          <h3 className="text-xl font-bold text-white mb-2">Contact</h3>
           <p>Email: support@zimfip.com</p>
           <p>Phone: +263 77 123 4567</p>
         </div>

@@ -4,6 +4,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import BuyerDashboard from "./pages/BuyerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+
 import Marketplace from "./pages/Marketplace";
 import Chat from "./pages/Chat";
 import CreateListing from "./pages/CreateListing";
@@ -12,6 +15,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Navbar from "./components/Navbar";
 import Admin from "./pages/Admin";
 import Purchase from "./pages/Purchase";
+import Upgrade from "./pages/Upgrade";
 
 function App() {
   return (
@@ -28,6 +32,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/buyerdashboard"
+              element={
+                <PrivateRoute>
+                  <BuyerDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admindashboard"
+              element={
+                <PrivateRoute>
+                  <AdminDashboard />
                 </PrivateRoute>
               }
             />
@@ -76,6 +96,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Purchase />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/upgrade"
+              element={
+                <PrivateRoute>
+                  <Upgrade />
                 </PrivateRoute>
               }
             />

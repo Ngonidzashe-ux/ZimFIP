@@ -66,9 +66,9 @@ function ActionButton({
 
   const variants = {
     primary: {
-      background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+      background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
       color: "#FFFFFF",
-      boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)",
+      boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
     },
     secondary: {
       background: "rgba(255, 255, 255, 0.1)",
@@ -76,15 +76,20 @@ function ActionButton({
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(10px)",
     },
+    success: {
+      background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)",
+      color: "#FFFFFF",
+      boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)",
+    },
+    warning: {
+      background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+      color: "#FFFFFF",
+      boxShadow: "0 4px 15px rgba(245, 158, 11, 0.3)",
+    },
     danger: {
       background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
       color: "#FFFFFF",
       boxShadow: "0 4px 15px rgba(239, 68, 68, 0.3)",
-    },
-    outline: {
-      background: "transparent",
-      color: "#22C55E",
-      border: "2px solid #22C55E",
     },
   };
 
@@ -194,15 +199,13 @@ function AnalyticsCard({
   );
 }
 
-// Listing Card Component
-function ListingCard({ listing, onEdit, onDelete, onViewMessages }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+// Purchase History Card
+function PurchaseCard({ purchase, onViewDetails, onReorder, onLeaveReview }) {
   const statusColors = {
-    active: "#22C55E",
+    completed: "#22C55E",
     pending: "#F59E0B",
-    sold: "#6B7280",
-    expired: "#EF4444",
+    cancelled: "#EF4444",
+    shipped: "#3B82F6",
   };
 
   return (
@@ -240,7 +243,7 @@ function ListingCard({ listing, onEdit, onDelete, onViewMessages }) {
               margin: "0 0 0.5rem 0",
             }}
           >
-            {listing.name || "Product Listing"}
+            {purchase.productName}
           </h3>
           <div
             style={{
@@ -252,26 +255,26 @@ function ListingCard({ listing, onEdit, onDelete, onViewMessages }) {
           >
             <span
               style={{
-                color: "#22C55E",
+                color: "#3B82F6",
                 fontSize: "1.1rem",
                 fontWeight: "bold",
               }}
             >
-              ${listing.price}/{listing.priceUnit}
+              ${purchase.totalAmount}
             </span>
             <span
               style={{
-                color: statusColors[listing.status] || statusColors.active,
+                color: statusColors[purchase.status] || statusColors.pending,
                 fontSize: "0.8rem",
                 fontWeight: "600",
                 background: `${
-                  statusColors[listing.status] || statusColors.active
+                  statusColors[purchase.status] || statusColors.pending
                 }20`,
                 padding: "0.25rem 0.75rem",
                 borderRadius: "1rem",
               }}
             >
-              {listing.status || "Active"}
+              {purchase.status}
             </span>
           </div>
         </div>
@@ -280,27 +283,31 @@ function ListingCard({ listing, onEdit, onDelete, onViewMessages }) {
           <ActionButton
             size="small"
             variant="secondary"
-            icon="💬"
-            onClick={() => onViewMessages(listing._id)}
+            icon="👁️"
+            onClick={() => onViewDetails(purchase.id)}
           >
-            Messages
+            Details
           </ActionButton>
-          <ActionButton
-            size="small"
-            variant="secondary"
-            icon="✏️"
-            onClick={() => onEdit(listing._id)}
-          >
-            Edit
-          </ActionButton>
-          <ActionButton
-            size="small"
-            variant="danger"
-            icon="🗑️"
-            onClick={() => onDelete(listing._id)}
-          >
-            Delete
-          </ActionButton>
+          {purchase.status === "completed" && (
+            <>
+              <ActionButton
+                size="small"
+                variant="success"
+                icon="🔄"
+                onClick={() => onReorder(purchase.id)}
+              >
+                Reorder
+              </ActionButton>
+              <ActionButton
+                size="small"
+                variant="warning"
+                icon="⭐"
+                onClick={() => onLeaveReview(purchase.id)}
+              >
+                Review
+              </ActionButton>
+            </>
+          )}
         </div>
       </div>
 
@@ -309,158 +316,112 @@ function ListingCard({ listing, onEdit, onDelete, onViewMessages }) {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
           gap: "1rem",
-          marginBottom: "1rem",
         }}
       >
         <div>
           <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>Quantity</span>
           <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
-            {listing.quantity} {listing.unit}
+            {purchase.quantity} {purchase.unit}
+          </div>
+        </div>
+        <div>
+          <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>Farmer</span>
+          <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
+            {purchase.farmerName}
+          </div>
+        </div>
+        <div>
+          <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>
+            Purchase Date
+          </span>
+          <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
+            {new Date(purchase.date).toLocaleDateString()}
           </div>
         </div>
         <div>
           <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>Location</span>
           <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
-            {listing.location?.city}, {listing.location?.province}
-          </div>
-        </div>
-        <div>
-          <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>Grade</span>
-          <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
-            {listing.farmerGrade || "N/A"}
-          </div>
-        </div>
-        <div>
-          <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>
-            Harvest Date
-          </span>
-          <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
-            {listing.harvestDate
-              ? new Date(listing.harvestDate).toLocaleDateString()
-              : "N/A"}
+            {purchase.location}
           </div>
         </div>
       </div>
-
-      {isExpanded && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.3 }}
-          style={{
-            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-            paddingTop: "1rem",
-          }}
-        >
-          <div style={{ marginBottom: "1rem" }}>
-            <span
-              style={{
-                color: "#B8D4B8",
-                fontSize: "0.8rem",
-                display: "block",
-                marginBottom: "0.5rem",
-              }}
-            >
-              Payment Options
-            </span>
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              {listing.paymentOptions?.map((option, index) => (
-                <span
-                  key={index}
-                  style={{
-                    background: "#22C55E",
-                    color: "#FFFFFF",
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "1rem",
-                    fontSize: "0.8rem",
-                    fontWeight: "600",
-                  }}
-                >
-                  {option}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {listing.phoneNumber && (
-            <div>
-              <span
-                style={{
-                  color: "#B8D4B8",
-                  fontSize: "0.8rem",
-                  display: "block",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                Contact Number
-              </span>
-              <span style={{ color: "#FFFFFF", fontWeight: "600" }}>
-                {listing.phoneNumber}
-              </span>
-            </div>
-          )}
-        </motion.div>
-      )}
-
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        style={{
-          background: "none",
-          border: "none",
-          color: "#22C55E",
-          cursor: "pointer",
-          fontSize: "0.9rem",
-          fontWeight: "600",
-          marginTop: "1rem",
-        }}
-      >
-        {isExpanded ? "Show Less ↑" : "Show More ↓"}
-      </button>
     </motion.div>
   );
 }
 
-// Quick Stats Component
-function QuickStats({ stats }) {
+// Wishlist Item Card
+function WishlistCard({ item, onRemove, onPurchase }) {
   return (
-    <div
+    <motion.div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-        gap: "1.5rem",
-        marginBottom: "2rem",
+        background: "rgba(255, 255, 255, 0.05)",
+        borderRadius: "1rem",
+        padding: "1.5rem",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(10px)",
+        marginBottom: "1rem",
       }}
+      whileHover={{
+        scale: 1.01,
+        transition: { duration: 0.3 },
+      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <AnalyticsCard
-        title="Total Earnings"
-        value={stats.totalEarnings}
-        change={stats.earningsChange}
-        icon="💰"
-        color="#22C55E"
-        prefix="$"
-      />
-      <AnalyticsCard
-        title="Active Listings"
-        value={stats.activeListings}
-        change={stats.listingsChange}
-        icon="📦"
-        color="#3B82F6"
-      />
-      <AnalyticsCard
-        title="Sales This Month"
-        value={stats.salesThisMonth}
-        change={stats.salesChange}
-        icon="📈"
-        color="#F59E0B"
-      />
-      <AnalyticsCard
-        title="Messages"
-        value={stats.unreadMessages}
-        icon="💬"
-        color="#8B5CF6"
-        suffix=" new"
-      />
-    </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <h3
+            style={{
+              color: "#FFFFFF",
+              fontSize: "1.1rem",
+              fontWeight: "600",
+              marginBottom: "0.5rem",
+            }}
+          >
+            {item.name}
+          </h3>
+          <div
+            style={{
+              color: "#3B82F6",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              marginBottom: "0.5rem",
+            }}
+          >
+            ${item.price}/{item.priceUnit}
+          </div>
+          <div style={{ color: "#B8D4B8", fontSize: "0.9rem" }}>
+            {item.farmerName} • {item.location}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <ActionButton
+            size="small"
+            variant="primary"
+            icon="🛒"
+            onClick={() => onPurchase(item.id)}
+          >
+            Buy Now
+          </ActionButton>
+          <ActionButton
+            size="small"
+            variant="danger"
+            icon="❌"
+            onClick={() => onRemove(item.id)}
+          >
+            Remove
+          </ActionButton>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -468,11 +429,11 @@ function QuickStats({ stats }) {
 function NavigationTabs({ activeTab, setActiveTab }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: "📊" },
-    { id: "listings", label: "My Listings", icon: "📦" },
+    { id: "purchases", label: "Purchase History", icon: "🛒" },
+    { id: "wishlist", label: "Wishlist", icon: "❤️" },
     { id: "messages", label: "Messages", icon: "💬" },
-    { id: "analytics", label: "Analytics", icon: "📈" },
-    { id: "crops", label: "Crop References", icon: "🌾" },
     { id: "disputes", label: "Disputes", icon: "⚖️" },
+    { id: "reviews", label: "Reviews", icon: "⭐" },
   ];
 
   return (
@@ -498,7 +459,7 @@ function NavigationTabs({ activeTab, setActiveTab }) {
             border: "none",
             background:
               activeTab === tab.id
-                ? "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)"
+                ? "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)"
                 : "transparent",
             color: activeTab === tab.id ? "#FFFFFF" : "#B8D4B8",
             cursor: "pointer",
@@ -514,7 +475,7 @@ function NavigationTabs({ activeTab, setActiveTab }) {
             scale: 1.05,
             background:
               activeTab === tab.id
-                ? "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)"
+                ? "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)"
                 : "rgba(255, 255, 255, 0.1)",
           }}
           whileTap={{ scale: 0.95 }}
@@ -527,62 +488,251 @@ function NavigationTabs({ activeTab, setActiveTab }) {
   );
 }
 
-// Main Dashboard Component
-function FarmerDashboard() {
+// Quick Stats Component
+function QuickStats({ stats }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gap: "1.5rem",
+        marginBottom: "2rem",
+      }}
+    >
+      <AnalyticsCard
+        title="Total Spent"
+        value={stats.totalSpent}
+        change={stats.spendingChange}
+        icon="💰"
+        color="#3B82F6"
+        prefix="$"
+      />
+      <AnalyticsCard
+        title="Orders This Month"
+        value={stats.ordersThisMonth}
+        change={stats.ordersChange}
+        icon="📦"
+        color="#22C55E"
+      />
+      <AnalyticsCard
+        title="Wishlist Items"
+        value={stats.wishlistItems}
+        icon="❤️"
+        color="#EF4444"
+      />
+      <AnalyticsCard
+        title="Saved Amount"
+        value={stats.savedAmount}
+        change={stats.savingsChange}
+        icon="💸"
+        color="#F59E0B"
+        prefix="$"
+      />
+    </div>
+  );
+}
+
+// Review Card Component
+function ReviewCard({ review, onEdit, onDelete }) {
+  const ratingStars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
+
+  return (
+    <motion.div
+      style={{
+        background: "rgba(255, 255, 255, 0.05)",
+        borderRadius: "1rem",
+        padding: "1.5rem",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(10px)",
+        marginBottom: "1rem",
+      }}
+      whileHover={{
+        scale: 1.01,
+        transition: { duration: 0.3 },
+      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "1rem",
+        }}
+      >
+        <div>
+          <h3
+            style={{
+              color: "#FFFFFF",
+              fontSize: "1.2rem",
+              fontWeight: "600",
+              margin: "0 0 0.5rem 0",
+            }}
+          >
+            {review.productName}
+          </h3>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <span style={{ color: "#F59E0B", fontSize: "1rem" }}>
+              {ratingStars(review.rating)}
+            </span>
+            <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>
+              {new Date(review.date).toLocaleDateString()}
+            </span>
+          </div>
+          <p
+            style={{
+              color: "#FFFFFF",
+              fontSize: "0.9rem",
+              margin: "0 0 1rem 0",
+            }}
+          >
+            {review.text}
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <ActionButton
+            size="small"
+            variant="secondary"
+            icon="✏️"
+            onClick={() => onEdit(review.id)}
+          >
+            Edit
+          </ActionButton>
+          <ActionButton
+            size="small"
+            variant="danger"
+            icon="🗑️"
+            onClick={() => onDelete(review.id)}
+          >
+            Delete
+          </ActionButton>
+        </div>
+      </div>
+      <div>
+        <span style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>Farmer</span>
+        <div style={{ color: "#FFFFFF", fontWeight: "600" }}>
+          {review.farmerName}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Main Buyer Dashboard Component
+function BuyerDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [listings, setListings] = useState([]);
+  const [purchases, setPurchases] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user] = useState({ name: "John Doe", email: "john@example.com" }); // Mock user
+  const [user] = useState({
+    name: "Sarah Johnson",
+    email: "sarah@example.com",
+  });
 
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, threshold: 0.1 });
 
-  // Mock data - replace with actual API calls
+  // Mock data
   const mockStats = {
-    totalEarnings: 12450,
-    earningsChange: 15.3,
-    activeListings: 8,
-    listingsChange: -2.1,
-    salesThisMonth: 24,
-    salesChange: 8.7,
-    unreadMessages: 5,
+    totalSpent: 2840,
+    spendingChange: 12.5,
+    ordersThisMonth: 8,
+    ordersChange: 25.0,
+    wishlistItems: 12,
+    savedAmount: 340,
+    savingsChange: 8.2,
   };
 
-  const mockListings = [
+  const mockPurchases = [
     {
-      _id: "1",
-      name: "Fresh Organic Maize",
-      price: 45,
-      priceUnit: "bag",
-      quantity: 100,
+      id: "1",
+      productName: "Fresh Organic Maize",
+      totalAmount: 450,
+      quantity: 10,
       unit: "bags",
-      location: { city: "Harare", province: "Harare" },
-      farmerGrade: "Grade A",
-      harvestDate: "2025-01-10",
-      status: "active",
-      paymentOptions: ["cash", "ecocash"],
-      phoneNumber: "+263771234567",
+      farmerName: "John Doe",
+      location: "Harare",
+      date: "2025-01-10",
+      status: "completed",
     },
     {
-      _id: "2",
-      name: "Sweet Potatoes",
+      id: "2",
+      productName: "Sweet Potatoes",
+      totalAmount: 120,
+      quantity: 15,
+      unit: "kg",
+      farmerName: "Jane Smith",
+      location: "Bulawayo",
+      date: "2025-01-08",
+      status: "shipped",
+    },
+    {
+      id: "3",
+      productName: "Tomatoes",
+      totalAmount: 80,
+      quantity: 10,
+      unit: "kg",
+      farmerName: "Peter Mwangi",
+      location: "Masvingo",
+      date: "2025-01-05",
+      status: "pending",
+    },
+  ];
+
+  const mockWishlist = [
+    {
+      id: "1",
+      name: "Organic Spinach",
       price: 8,
       priceUnit: "kg",
-      quantity: 500,
-      unit: "kg",
-      location: { city: "Bulawayo", province: "Bulawayo" },
-      farmerGrade: "Grade B",
-      harvestDate: "2025-01-05",
-      status: "pending",
-      paymentOptions: ["cash", "visa"],
-      phoneNumber: "+263772345678",
+      farmerName: "Mary Johnson",
+      location: "Mutare",
+    },
+    {
+      id: "2",
+      name: "Free-Range Eggs",
+      price: 3,
+      priceUnit: "dozen",
+      farmerName: "David Wilson",
+      location: "Gweru",
+    },
+  ];
+
+  const mockReviews = [
+    {
+      id: "1",
+      productName: "Fresh Organic Maize",
+      rating: 4,
+      text: "Great quality maize, delivered fresh and on time!",
+      farmerName: "John Doe",
+      date: "2025-01-12",
+    },
+    {
+      id: "2",
+      productName: "Sweet Potatoes",
+      rating: 5,
+      text: "The best sweet potatoes I've ever bought. Highly recommend!",
+      farmerName: "Jane Smith",
+      date: "2025-01-09",
     },
   ];
 
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
-      setListings(mockListings);
+      setPurchases(mockPurchases);
+      setWishlist(mockWishlist);
+      setReviews(mockReviews);
       setLoading(false);
     }, 1000);
   }, []);
@@ -591,13 +741,17 @@ function FarmerDashboard() {
     console.log(`Navigate to: ${path}`);
   };
 
-  const handleCreateListing = () => handleNavigate("/create-listing");
-  const handleEditListing = (id) => handleNavigate(`/edit-listing/${id}`);
-  const handleDeleteListing = async (id) => {
-    console.log(`Delete listing: ${id}`);
-    setListings(listings.filter((l) => l._id !== id));
+  const handleViewDetails = (id) => handleNavigate(`/purchase/${id}`);
+  const handleReorder = (id) => console.log(`Reorder: ${id}`);
+  const handleLeaveReview = (id) => handleNavigate(`/review/${id}`);
+  const handleRemoveFromWishlist = (id) => {
+    setWishlist(wishlist.filter((item) => item.id !== id));
   };
-  const handleViewMessages = (id) => handleNavigate(`/messages/${id}`);
+  const handlePurchaseFromWishlist = (id) => handleNavigate(`/purchase/${id}`);
+  const handleEditReview = (id) => handleNavigate(`/review/edit/${id}`);
+  const handleDeleteReview = (id) => {
+    setReviews(reviews.filter((review) => review.id !== id));
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -613,7 +767,6 @@ function FarmerDashboard() {
                 gap: "2rem",
               }}
             >
-              {/* Quick Actions */}
               <motion.div
                 style={{
                   background: "rgba(255, 255, 255, 0.05)",
@@ -626,44 +779,27 @@ function FarmerDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⭐</div>
                 <h3
                   style={{
                     color: "#FFFFFF",
                     fontSize: "1.2rem",
-                    fontWeight: "600",
                     marginBottom: "1rem",
                   }}
                 >
-                  Quick Actions
+                  Product Reviews
                 </h3>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.75rem",
-                  }}
+                <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
+                  Share your experience and help other buyers make informed
+                  decisions
+                </p>
+                <ActionButton
+                  onClick={() => handleNavigate("/reviews")}
+                  icon="⭐"
                 >
-                  <ActionButton onClick={handleCreateListing} icon="➕">
-                    Create New Listing
-                  </ActionButton>
-                  <ActionButton
-                    onClick={() => handleNavigate("/messages")}
-                    variant="secondary"
-                    icon="💬"
-                  >
-                    View Messages
-                  </ActionButton>
-                  <ActionButton
-                    onClick={() => handleNavigate("/analytics")}
-                    variant="secondary"
-                    icon="📊"
-                  >
-                    View Analytics
-                  </ActionButton>
-                </div>
+                  View My Reviews
+                </ActionButton>
               </motion.div>
-
-              {/* Recent Activity */}
               <motion.div
                 style={{
                   background: "rgba(255, 255, 255, 0.05)",
@@ -684,7 +820,7 @@ function FarmerDashboard() {
                     marginBottom: "1rem",
                   }}
                 >
-                  Recent Activity
+                  Recent Orders
                 </h3>
                 <div
                   style={{
@@ -693,41 +829,26 @@ function FarmerDashboard() {
                     gap: "0.75rem",
                   }}
                 >
-                  {[
-                    {
-                      text: "New message from buyer about Maize listing",
-                      time: "2 hours ago",
-                      icon: "💬",
-                    },
-                    {
-                      text: "Listing 'Sweet Potatoes' approved",
-                      time: "5 hours ago",
-                      icon: "✅",
-                    },
-                    {
-                      text: "Payment received for Tomatoes",
-                      time: "1 day ago",
-                      icon: "💰",
-                    },
-                  ].map((activity, index) => (
+                  {purchases.slice(0, 3).map((purchase) => (
                     <div
-                      key={index}
+                      key={purchase.id}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.75rem",
+                        padding: "0.75rem",
+                        background: "rgba(255, 255, 255, 0.05)",
+                        borderRadius: "0.5rem",
                       }}
                     >
-                      <span style={{ fontSize: "1.2rem" }}>
-                        {activity.icon}
-                      </span>
-                      <div>
-                        <div style={{ color: "#FFFFFF", fontSize: "0.9rem" }}>
-                          {activity.text}
-                        </div>
-                        <div style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>
-                          {activity.time}
-                        </div>
+                      <div
+                        style={{
+                          color: "#FFFFFF",
+                          fontSize: "0.9rem",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {purchase.productName}
+                      </div>
+                      <div style={{ color: "#B8D4B8", fontSize: "0.8rem" }}>
+                        ${purchase.totalAmount} • {purchase.status}
                       </div>
                     </div>
                   ))}
@@ -737,7 +858,7 @@ function FarmerDashboard() {
           </div>
         );
 
-      case "listings":
+      case "purchases":
         return (
           <div>
             <div
@@ -756,20 +877,23 @@ function FarmerDashboard() {
                   margin: 0,
                 }}
               >
-                My Listings ({listings.length})
+                Purchase History ({purchases.length})
               </h2>
-              <ActionButton onClick={handleCreateListing} icon="➕">
-                Create New Listing
+              <ActionButton
+                onClick={() => handleNavigate("/marketplace")}
+                icon="🛒"
+              >
+                Browse More Products
               </ActionButton>
             </div>
 
             {loading ? (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <div style={{ color: "#B8D4B8", fontSize: "1.1rem" }}>
-                  Loading listings...
+                  Loading purchases...
                 </div>
               </div>
-            ) : listings.length === 0 ? (
+            ) : purchases.length === 0 ? (
               <motion.div
                 style={{
                   textAlign: "center",
@@ -782,7 +906,7 @@ function FarmerDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📦</div>
+                <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🛒</div>
                 <h3
                   style={{
                     color: "#FFFFFF",
@@ -790,24 +914,104 @@ function FarmerDashboard() {
                     marginBottom: "1rem",
                   }}
                 >
-                  No listings yet
+                  No purchases yet
                 </h3>
                 <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
-                  Create your first listing to start selling your produce
+                  Start shopping to see your purchase history here
                 </p>
-                <ActionButton onClick={handleCreateListing} icon="➕">
-                  Create Your First Listing
+                <ActionButton
+                  onClick={() => handleNavigate("/marketplace")}
+                  icon="🛒"
+                >
+                  Start Shopping
                 </ActionButton>
               </motion.div>
             ) : (
               <div>
-                {listings.map((listing) => (
-                  <ListingCard
-                    key={listing._id}
-                    listing={listing}
-                    onEdit={handleEditListing}
-                    onDelete={handleDeleteListing}
-                    onViewMessages={handleViewMessages}
+                {purchases.map((purchase) => (
+                  <PurchaseCard
+                    key={purchase.id}
+                    purchase={purchase}
+                    onViewDetails={handleViewDetails}
+                    onReorder={handleReorder}
+                    onLeaveReview={handleLeaveReview}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
+      case "wishlist":
+        return (
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "2rem",
+              }}
+            >
+              <h2
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: "1.5rem",
+                  fontWeight: "600",
+                  margin: 0,
+                }}
+              >
+                My Wishlist ({wishlist.length})
+              </h2>
+              <ActionButton
+                onClick={() => handleNavigate("/marketplace")}
+                icon="❤️"
+              >
+                Add More Items
+              </ActionButton>
+            </div>
+
+            {wishlist.length === 0 ? (
+              <motion.div
+                style={{
+                  textAlign: "center",
+                  padding: "3rem",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "1rem",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>❤️</div>
+                <h3
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: "1.2rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  Your wishlist is empty
+                </h3>
+                <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
+                  Save items you love to purchase them later
+                </p>
+                <ActionButton
+                  onClick={() => handleNavigate("/marketplace")}
+                  icon="🛒"
+                >
+                  Browse Products
+                </ActionButton>
+              </motion.div>
+            ) : (
+              <div>
+                {wishlist.map((item) => (
+                  <WishlistCard
+                    key={item.id}
+                    item={item}
+                    onRemove={handleRemoveFromWishlist}
+                    onPurchase={handlePurchaseFromWishlist}
                   />
                 ))}
               </div>
@@ -851,159 +1055,13 @@ function FarmerDashboard() {
                 Message Center
               </h3>
               <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
-                Chat with buyers about your listings and negotiate deals
+                Chat with farmers about products and deliveries
               </p>
               <ActionButton
                 onClick={() => handleNavigate("/messages")}
                 icon="💬"
               >
                 Open Message Center
-              </ActionButton>
-            </motion.div>
-          </div>
-        );
-
-      case "analytics":
-        return (
-          <div>
-            <h2
-              style={{
-                color: "#FFFFFF",
-                fontSize: "1.5rem",
-                fontWeight: "600",
-                marginBottom: "2rem",
-              }}
-            >
-              Analytics & Reports
-            </h2>
-            <QuickStats stats={mockStats} />
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                gap: "2rem",
-              }}
-            >
-              <motion.div
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "1rem",
-                  padding: "1.5rem",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(10px)",
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <h3
-                  style={{
-                    color: "#FFFFFF",
-                    fontSize: "1.1rem",
-                    fontWeight: "600",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  Sales Performance
-                </h3>
-                <div
-                  style={{
-                    color: "#B8D4B8",
-                    fontSize: "0.9rem",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  Track your sales trends and identify your best-performing
-                  products
-                </div>
-                <ActionButton variant="secondary" size="small">
-                  View Detailed Report
-                </ActionButton>
-              </motion.div>
-
-              <motion.div
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "1rem",
-                  padding: "1.5rem",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(10px)",
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <h3
-                  style={{
-                    color: "#FFFFFF",
-                    fontSize: "1.1rem",
-                    fontWeight: "600",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  Market Insights
-                </h3>
-                <div
-                  style={{
-                    color: "#B8D4B8",
-                    fontSize: "0.9rem",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  Understanding market trends and pricing for your crops
-                </div>
-                <ActionButton variant="secondary" size="small">
-                  View Market Data
-                </ActionButton>
-              </motion.div>
-            </div>
-          </div>
-        );
-
-      case "crops":
-        return (
-          <div>
-            <h2
-              style={{
-                color: "#FFFFFF",
-                fontSize: "1.5rem",
-                fontWeight: "600",
-                marginBottom: "2rem",
-              }}
-            >
-              Crop References
-            </h2>
-            <motion.div
-              style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "1rem",
-                padding: "2rem",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                textAlign: "center",
-              }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🌾</div>
-              <h3
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: "1.2rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                Crop Reference System
-              </h3>
-              <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
-                Request new crop types to be added to the platform
-              </p>
-              <ActionButton
-                onClick={() => handleNavigate("/crop-request")}
-                icon="📋"
-              >
-                Request New Crop Type
               </ActionButton>
             </motion.div>
           </div>
@@ -1073,6 +1131,88 @@ function FarmerDashboard() {
           </div>
         );
 
+      case "reviews":
+        return (
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "2rem",
+              }}
+            >
+              <h2
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: "1.5rem",
+                  fontWeight: "600",
+                  margin: 0,
+                }}
+              >
+                My Reviews ({reviews.length})
+              </h2>
+              <ActionButton
+                onClick={() => handleNavigate("/write-review")}
+                icon="⭐"
+              >
+                Write a Review
+              </ActionButton>
+            </div>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div style={{ color: "#B8D4B8", fontSize: "1.1rem" }}>
+                  Loading reviews...
+                </div>
+              </div>
+            ) : reviews.length === 0 ? (
+              <motion.div
+                style={{
+                  textAlign: "center",
+                  padding: "3rem",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "1rem",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>⭐</div>
+                <h3
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: "1.2rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  No reviews yet
+                </h3>
+                <p style={{ color: "#B8D4B8", marginBottom: "1.5rem" }}>
+                  Share your experience with products you've purchased
+                </p>
+                <ActionButton
+                  onClick={() => handleNavigate("/write-review")}
+                  icon="⭐"
+                >
+                  Write a Review
+                </ActionButton>
+              </motion.div>
+            ) : (
+              <div>
+                {reviews.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    onEdit={handleEditReview}
+                    onDelete={handleDeleteReview}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1090,7 +1230,6 @@ function FarmerDashboard() {
     >
       <FloatingParticles count={15} opacity={0.08} />
 
-      {/* Background decorative elements */}
       <div
         style={{
           position: "absolute",
@@ -1099,7 +1238,7 @@ function FarmerDashboard() {
           width: "150px",
           height: "150px",
           background:
-            "radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)",
           borderRadius: "50%",
           filter: "blur(60px)",
         }}
@@ -1128,7 +1267,6 @@ function FarmerDashboard() {
           padding: "2rem",
         }}
       >
-        {/* Header */}
         <motion.div
           style={{
             textAlign: "center",
@@ -1138,28 +1276,27 @@ function FarmerDashboard() {
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.8 }}
         >
-          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🚜</div>
+          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🛒</div>
           <h1
             style={{
               fontSize: "3rem",
               fontWeight: "bold",
               marginBottom: "0.5rem",
-              background: "linear-gradient(135deg, #FFFFFF 0%, #22C55E 100%)",
+              background: "linear-gradient(135deg, #FFFFFF 0%, #3B82F6 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
               textShadow: "0 4px 8px rgba(0,0,0,0.2)",
             }}
           >
-            Farmer Dashboard
+            Buyer Dashboard
           </h1>
           <p style={{ color: "#B8D4B8", fontSize: "1.2rem" }}>
-            Welcome back, {user.name}! Manage your farm business and grow your
-            success.
+            Welcome back, {user.name}! Discover fresh produce and manage your
+            orders.
           </p>
         </motion.div>
 
-        {/* Navigation Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -1168,7 +1305,6 @@ function FarmerDashboard() {
           <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         </motion.div>
 
-        {/* Tab Content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -1177,14 +1313,13 @@ function FarmerDashboard() {
           {renderTabContent()}
         </motion.div>
 
-        {/* Footer Actions */}
         <motion.div
           style={{
             marginTop: "3rem",
             padding: "2rem",
-            background: "rgba(34, 197, 94, 0.1)",
+            background: "rgba(59, 130, 246, 0.1)",
             borderRadius: "1.5rem",
-            border: "1px solid rgba(34, 197, 94, 0.2)",
+            border: "1px solid rgba(59, 130, 246, 0.2)",
             textAlign: "center",
           }}
           initial={{ opacity: 0, y: 20 }}
@@ -1199,7 +1334,7 @@ function FarmerDashboard() {
               marginBottom: "1rem",
             }}
           >
-            Need Help?
+            Need Help Finding Something?
           </h3>
           <p
             style={{
@@ -1208,8 +1343,8 @@ function FarmerDashboard() {
               fontSize: "1rem",
             }}
           >
-            Our support team is here to help you maximize your farming success
-            on ZimFIP
+            Our team is here to help you find the best fresh produce from local
+            farmers
           </p>
           <div
             style={{
@@ -1234,11 +1369,11 @@ function FarmerDashboard() {
               Contact Support
             </ActionButton>
             <ActionButton
-              onClick={() => handleNavigate("/tutorial")}
-              variant="secondary"
-              icon="🎓"
+              onClick={() => handleNavigate("/marketplace")}
+              variant="primary"
+              icon="🛒"
             >
-              Platform Tutorial
+              Browse Marketplace
             </ActionButton>
           </div>
         </motion.div>
@@ -1247,4 +1382,4 @@ function FarmerDashboard() {
   );
 }
 
-export default FarmerDashboard;
+export default BuyerDashboard;
